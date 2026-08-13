@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openapi.generator' version '7.24.0'
+    id 'io.freefair.lombok' version '9.5.0'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(26)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+openApiGenerate {
+    generatorName = "java" // java, spring, or kotlin, etc.
+	library = "native"
+	configOptions = [
+			serializationLibrary: "jackson",
+            // Forces the generator to replace javax.* with jakarta.*
+            useJakartaEe        : "true"
+    ]
+
+	inputSpec = "$rootDir/src/main/resources/openapi.yaml"
+    outputDir = "${layout.buildDirectory.get()}/generated"
+	modelPackage = "com.example.github_service.dto"
+}
+
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-restclient'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+
+    // Import the platform Bill of Materials to lock all Jackson 3 versions together
+    implementation platform("tools.jackson:jackson-bom:3.1.4")
+
+    // Core Jackson 3 components
+    implementation "tools.jackson.core:jackson-databind"
+    implementation "tools.jackson.core:jackson-core"
+
+    // The JSR310 Date/Time Module
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+
+    // Note: Jackson 3 still relies on the 2.x annotation branch, but requires a modern 2.21+ release!
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.21"
+
+    implementation "org.openapitools:jackson-databind-nullable:0.2.6"
+    implementation "io.swagger.core.v3:swagger-annotations:2.2.28"
+
+	// Essential for @Generated annotations in modern Java environments
+	implementation "jakarta.annotation:jakarta.annotation-api:2.1.1"
+
+    // Lombok dependencies
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    // Lombok-MapStruct Binding (MUST be placed before MapStruct processor)
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    // MapStruct dependencies
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Make Java compilation wait for OpenAPI generation
+compileJava.dependsOn tasks.openApiGenerate
+
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir}/generated/src/main/java"
+        }
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

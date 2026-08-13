@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: GitHub Service for getting user info from GitHub
+  description: |-
+    A simple service for retrieving GitHub data:
+    - get GitHub data for a username
+  version: 0.0.1-SNAPSHOT
+servers:
+  - url: https://localhost:8080
+tags:
+  - name: github
+    description: GitHub operations
+paths:
+  /github/users/{username}/data:
+    get:
+      tags:
+        - github
+      summary: Get GitHub data for a username
+      description: Call GitHub to get data for a username
+      operationId: getUserData
+      parameters:
+        - in: path
+          name: username
+          schema:
+            $ref: '#/components/schemas/GitHubUsername'
+          required: true
+          description: The GitHub username
+
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitHubUserDataDto'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+components:
+  schemas:
+    GitHubUsername:
+      type: string
+    GitHubUserDataDto:
+      type: object
+      properties:
+        user_name:
+          type: string
+        display_name:
+          type: string
+        avatar:
+          type: string
+          format: uri
+        geo_location:
+          type: string
+        email:
+          type: string
+          format: email
+        url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+        repos:
+          type: array
+          items:
+            type: GitHubRepoDto
+    GitHubRepoDto:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+    NotFoundError:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+        error:
+          type: string
+        message:
+          type: string

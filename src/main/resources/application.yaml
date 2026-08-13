@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: "github-service"
+  main:
+    web-application-type: "servlet"
+  cache:
+    cache-names:
+      - githubuserdata
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=30s,recordStats
+server:
+  port: 8080
+management:
+  server:
+    port: 8081
+  # Enable health probes
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  # Expose the health endpoint
+  endpoints:
+    web:
+      exposure:
+        include: health
